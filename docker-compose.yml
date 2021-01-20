@@ -1,0 +1,61 @@
+version: '3.4'
+
+services:
+  service-registry:
+    image: service-registry
+    build:
+      context: ../service-registry
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -Dspring.profiles.active=staging
+    ports:
+      - 8761:8761
+    networks:
+      microservices-demo:
+
+  config-service:
+    depends_on:
+      - service-registry
+    image: config-service
+    build:
+      context: ../config-service
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -Dspring.profiles.active=staging
+    ports:
+      - 9292:9292
+    networks:
+      microservices-demo:
+
+  department-service:
+    depends_on:
+      - config-service
+      - service-registry
+    image: department-service
+    build:
+      context: ../department-service
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -DSPRING_CONFIG_URI=http://config-service:9292 -Dspring.profiles.active=staging
+    ports:
+      - 9001:9001
+    networks:
+      microservices-demo:
+
+  user-service:
+    depends_on:
+      - config-service
+      - service-registry
+    image: user-service
+    build:
+      context: ../user-service
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -DSPRING_CONFIG_URI=http://config-service:9292 -Dspring.profiles.active=staging
+    ports:
+      - 9002:9002
+    networks:
+      microservices-demo:
+
+networks:
+  microservices-demo:
