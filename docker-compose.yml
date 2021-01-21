@@ -57,5 +57,42 @@ services:
     networks:
       microservices-demo:
 
+  api-gateway:
+    depends_on:
+      - config-service
+      - service-registry
+    image: api-gateway
+    build:
+      context: ../api-gateway
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -DSPRING_CONFIG_URI=http://config-service:9292 -Dspring.profiles.active=staging
+    ports:
+      - 9191:9191
+    networks:
+      microservices-demo:
+
+  dashboard:
+    depends_on:
+      - config-service
+      - service-registry
+    image: dashboard
+    build:
+      context: ../dashboard
+      dockerfile: ./Dockerfile
+    environment:
+      JAVA_OPTS: -DSPRING_CONFIG_URI=http://config-service:9292 -Dspring.profiles.active=staging
+    ports:
+      - 9192:9192
+    networks:
+      microservices-demo:
+
+  log-aggregator:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+    networks:
+      microservices-demo:
+      
 networks:
   microservices-demo:
